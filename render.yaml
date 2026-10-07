@@ -15,7 +15,7 @@ services:
       - key: LOG_LEVEL
         value: "info"
       - key: DATABASE_PATH
-        value: "./data/bot.sqlite"
+        value: "./data/bot_store.json"
       - key: GEMINI_API_KEY
         sync: false
       - key: PAIRING_PHONE_NUMBER

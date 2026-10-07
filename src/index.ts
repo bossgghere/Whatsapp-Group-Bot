@@ -1,8 +1,10 @@
 import { config } from './config/env.js';
-import { createSqliteDatabase } from './infrastructure/database/sqlite-client.js';
-import { SqliteMessageRepository } from './infrastructure/database/sqlite-message-repo.js';
-import { SqliteTicketRepository } from './infrastructure/database/sqlite-ticket-repo.js';
-import { SqliteReminderRepository } from './infrastructure/database/sqlite-reminder-repo.js';
+import {
+  JsonFileDatabase,
+  JsonMessageRepository,
+  JsonTicketRepository,
+  JsonReminderRepository,
+} from './infrastructure/storage/json-storage.js';
 import { TimerSchedulerService } from './infrastructure/scheduler/timer-scheduler.js';
 import { GeminiAIProvider } from './infrastructure/ai/gemini-provider.js';
 import { BaileysWhatsAppGateway } from './infrastructure/whatsapp/baileys-client.js';
@@ -18,14 +20,14 @@ async function bootstrap() {
   console.log(`🚀 Starting ${config.botName}...`);
   console.log('================================================================');
 
-  // 1. Initialize SQLite Database
+  // 1. Initialize Storage Engine (Pure JS / JSON - crash-proof & zero native C++ bindings)
   console.log(`[Storage] Initializing database at: ${config.databasePath}`);
-  const db = createSqliteDatabase(config.databasePath);
+  const db = new JsonFileDatabase(config.databasePath);
 
   // 2. Initialize Repositories
-  const messageRepo = new SqliteMessageRepository(db);
-  const ticketRepo = new SqliteTicketRepository(db);
-  const reminderRepo = new SqliteReminderRepository(db);
+  const messageRepo = new JsonMessageRepository(db);
+  const ticketRepo = new JsonTicketRepository(db);
+  const reminderRepo = new JsonReminderRepository(db);
 
   // 3. Initialize Services
   const scheduler = new TimerSchedulerService();
