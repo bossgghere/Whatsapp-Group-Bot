@@ -20,10 +20,20 @@ export class BaileysWhatsAppGateway implements IWhatsAppGateway {
   private isStopping = false;
   private pairingPhoneNumber?: string;
   private sentByBotIds = new Set<string>();
+  public latestPairingCode: string | null = null;
+  public isConnectedStatus = false;
 
   constructor(authDir = './auth_info_baileys', pairingPhoneNumber?: string) {
     this.authDir = authDir;
     this.pairingPhoneNumber = pairingPhoneNumber;
+  }
+
+  isConnected(): boolean {
+    return this.isConnectedStatus;
+  }
+
+  getPairingCode(): string | null {
+    return this.latestPairingCode;
   }
 
   onMessageReceived(handler: (message: GroupMessage) => Promise<void>): void {
@@ -54,6 +64,7 @@ export class BaileysWhatsAppGateway implements IWhatsAppGateway {
         try {
           if (this.sock) {
             const code = await this.sock.requestPairingCode(cleanPhone);
+            this.latestPairingCode = code;
             console.log('\n======================================================');
             console.log(`🔑 YOUR WHATSAPP PAIRING CODE: ${code}`);
             console.log('📱 Link with code:');
@@ -81,6 +92,7 @@ export class BaileysWhatsAppGateway implements IWhatsAppGateway {
       }
 
       if (connection === 'close') {
+        this.isConnectedStatus = false;
         const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut && !this.isStopping;
         console.log(
@@ -90,6 +102,8 @@ export class BaileysWhatsAppGateway implements IWhatsAppGateway {
           setTimeout(() => this.start(), 3000);
         }
       } else if (connection === 'open') {
+        this.isConnectedStatus = true;
+        this.latestPairingCode = null;
         console.log('\n✅ [WhatsApp] Connected successfully! Bot is active and listening to groups.\n');
       }
     });

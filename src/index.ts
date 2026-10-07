@@ -11,6 +11,7 @@ import { ManageTicketsUseCase } from './application/use-cases/manage-tickets.use
 import { ManageRemindersUseCase } from './application/use-cases/manage-reminders.usecase.js';
 import { MessageOrchestrator } from './application/orchestrator.js';
 import { attachWhatsAppListener } from './presentation/whatsapp-listener.js';
+import { startHttpServer } from './presentation/http-server.js';
 
 async function bootstrap() {
   console.log('================================================================');
@@ -63,10 +64,14 @@ async function bootstrap() {
   // 7. Attach Listener
   attachWhatsAppListener(whatsappGateway, orchestrator);
 
-  // 8. Handle Graceful Shutdown
+  // 8. Start HTTP Dashboard & Health Check Server
+  const httpServer = startHttpServer(whatsappGateway, ticketRepo);
+
+  // 9. Handle Graceful Shutdown
   const shutdown = async () => {
     console.log('\n[App] Shutting down gracefully...');
     try {
+      httpServer.close();
       await whatsappGateway.stop();
       db.close();
       console.log('[App] Cleanup complete. Exited.');
@@ -80,7 +85,7 @@ async function bootstrap() {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 
-  // 9. Start WhatsApp Socket
+  // 10. Start WhatsApp Socket
   console.log('[App] Connecting to WhatsApp network...');
   await whatsappGateway.start();
 }

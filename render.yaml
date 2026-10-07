@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: whatsapp-group-bot
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: BOT_NAME
+        value: "TechSync Bot"
+      - key: BOT_TRIGGER_KEYWORD
+        value: "@bot"
+      - key: LOG_LEVEL
+        value: "info"
+      - key: DATABASE_PATH
+        value: "./data/bot.sqlite"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PAIRING_PHONE_NUMBER
+        sync: false
